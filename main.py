@@ -2,7 +2,6 @@ import os
 import scipy.misc
 import numpy as np
 import tensorflow as tf
-
 from utils import pp, visualize, to_json
 
 from models.dcgan_mnist import DCGAN_MNIST
