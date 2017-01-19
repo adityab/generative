@@ -1,11 +1,12 @@
 import os
 import scipy.misc
 import numpy as np
+import tensorflow as tf
 
-from models.dcgan import DCGAN
 from utils import pp, visualize, to_json
 
-import tensorflow as tf
+from models.dcgan_mnist import DCGAN_MNIST
+from models.dcgan_celeba import DCGAN_CelebA
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -48,22 +49,15 @@ def main(_):
 
   with tf.Session(config=run_config) as sess:
     if FLAGS.dataset == 'mnist':
-      dcgan = DCGAN(
+      model = DCGAN_MNIST(
           sess,
-          input_width=FLAGS.input_width,
-          input_height=FLAGS.input_height,
-          output_width=FLAGS.output_width,
-          output_height=FLAGS.output_height,
           batch_size=FLAGS.batch_size,
           y_dim=10,
           c_dim=1,
-          dataset_name=FLAGS.dataset,
-          input_fname_pattern=FLAGS.input_fname_pattern,
-          is_crop=FLAGS.is_crop,
           checkpoint_dir=FLAGS.checkpoint_dir,
           sample_dir=FLAGS.sample_dir)
     else:
-      dcgan = DCGAN(
+      model = DCGAN_CelebA(
           sess,
           input_width=FLAGS.input_width,
           input_height=FLAGS.input_height,
@@ -78,9 +72,9 @@ def main(_):
           sample_dir=FLAGS.sample_dir)
 
     if FLAGS.is_train:
-      dcgan.train(FLAGS)
+      model.train(FLAGS)
     else:
-      if not dcgan.load(FLAGS.checkpoint_dir):
+      if not model.load(FLAGS.checkpoint_dir):
         raise Exception("[!] Train a model first, then run test mode")
 
 
@@ -92,7 +86,7 @@ def main(_):
 
     # Below is codes for visualization
     OPTION = 1
-    visualize(sess, dcgan, FLAGS, OPTION)
+    visualize(sess, model, FLAGS, OPTION)
 
 if __name__ == '__main__':
   tf.app.run()
