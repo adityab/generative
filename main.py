@@ -58,13 +58,8 @@ def main(_):
     else:
       model = DCGAN_CelebA(
           sess,
-          input_width=FLAGS.input_width,
-          input_height=FLAGS.input_height,
-          output_width=FLAGS.output_width,
-          output_height=FLAGS.output_height,
           batch_size=FLAGS.batch_size,
           c_dim=FLAGS.c_dim,
-          dataset_name=FLAGS.dataset,
           input_fname_pattern=FLAGS.input_fname_pattern,
           is_crop=FLAGS.is_crop,
           checkpoint_dir=FLAGS.checkpoint_dir,
