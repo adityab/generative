@@ -6,6 +6,7 @@ from utils import pp, visualize, to_json
 
 from models.dcgan_mnist import DCGAN_MNIST
 from models.dcgan_celeba import DCGAN_CelebA
+from models.dcwgan_mnist import DCWGAN_MNIST
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -21,7 +22,7 @@ flags.DEFINE_integer("output_height", 64, "The size of the output images to prod
 flags.DEFINE_integer("output_width", None, "The size of the output images to produce. If None, same value as output_height [None]")
 flags.DEFINE_integer("c_dim", 3, "Dimension of image color. [3]")
 flags.DEFINE_string("stash_dir", ".", "The directory where all generated content goes")
-flags.DEFINE_string("dataset", "celebA", "The name of dataset [celebA, mnist, lsun]")
+flags.DEFINE_string("model", "dcgan_celeba", "The name of model to use [dcgan_celeba, dcgan_mnist, dcwgan_mnist]")
 flags.DEFINE_string("input_fname_pattern", "*.jpg", "Glob pattern of filename of input images [*]")
 flags.DEFINE_string("checkpoint_dir", FLAGS.stash_dir + "/checkpoint", "Directory name to save the checkpoints [checkpoint]")
 flags.DEFINE_string("sample_dir", FLAGS.stash_dir + "/samples", "Directory name to save the image samples [samples]")
@@ -47,7 +48,8 @@ def main(_):
   run_config.gpu_options.allow_growth=True
 
   with tf.Session(config=run_config) as sess:
-    if FLAGS.dataset == 'mnist':
+    if FLAGS.model == 'dcgan_mnist':
+      FLAGS.dataset = 'mnist'
       model = DCGAN_MNIST(
           sess,
           batch_size=FLAGS.batch_size,
@@ -55,7 +57,8 @@ def main(_):
           c_dim=1,
           checkpoint_dir=FLAGS.checkpoint_dir,
           sample_dir=FLAGS.sample_dir)
-    else:
+    elif FLAGS.model == 'dcgan_celeba':
+      FLAGS.dataset = 'celebA'
       model = DCGAN_CelebA(
           sess,
           batch_size=FLAGS.batch_size,
@@ -64,6 +67,18 @@ def main(_):
           is_crop=FLAGS.is_crop,
           checkpoint_dir=FLAGS.checkpoint_dir,
           sample_dir=FLAGS.sample_dir)
+    elif FLAGS.model == 'dcwgan_mnist':
+      FLAGS.dataset = 'mnist'
+      model = DCWGAN_MNIST(
+          sess,
+          batch_size=FLAGS.batch_size,
+          n_critic=5,
+          y_dim=10,
+          c_dim=1,
+          checkpoint_dir=FLAGS.checkpoint_dir,
+          sample_dir=FLAGS.sample_dir)
+    else:
+      print('No such model.')
 
     if FLAGS.is_train:
       model.train(FLAGS)
