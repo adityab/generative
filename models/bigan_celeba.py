@@ -101,8 +101,8 @@ class BiGAN_CelebA(object):
       h3 = lrelu(self.e_bn3(conv2d(h2, self.gf_dim*8, name='e_h3_conv')))
       reshaped = tf.reshape(h3, [self.batch_size, -1])
 
-      mu = linear(reshaped, self.z_dim, 'enc_mu_lin')
-      sig = linear(reshaped, self.z_dim, 'enc_log_sig_sq')
+      mu = linear(reshaped, self.z_dim, 'e_mu_lin')
+      sig = linear(reshaped, self.z_dim, 'e_log_sig_sq')
       z = mu + tf.exp(sig / 2) * tf.random_normal(shape=tf.shape(mu))
 
       return z
@@ -175,12 +175,17 @@ class BiGAN_CelebA(object):
     self.d_loss_fake = tf.reduce_mean(
       tf.nn.sigmoid_cross_entropy_with_logits(
         logits=self.D_logits_, targets=tf.zeros_like(self.D_)))
-    self.g_loss = tf.reduce_mean(
+    self.g_loss_1 = tf.reduce_mean(
       tf.nn.sigmoid_cross_entropy_with_logits(
-        logits=self.D_logits_, targets=tf.ones_like(self.D_)))
+        logits=self.D_logits_, targets=tf.ones_like(self.D_))
+      )
+    self.g_loss_2 = tf.reduce_mean(
+      tf.nn.sigmoid_cross_entropy_with_logits(
+        logits=self.D_logits, targets=tf.zeros_like(self.D))
+      )
     # Discriminator loss is the sum of these two losses
     self.d_loss = self.d_loss_real + self.d_loss_fake
-
+    self.g_loss = self.g_loss_1 + self.g_loss_2
     # =================== ANALYTICS ====================
     # Define Summaries
     self.d_sum = histogram_summary("d", self.D)
@@ -285,9 +290,9 @@ class BiGAN_CelebA(object):
               .astype(np.float32)
 
         # Train D network
-        _, d_loss = self.sess.run([d_optim, self.d_loss],
+        _, summary_str, d_loss = self.sess.run([d_optim, self.d_sum, self.d_loss],
           feed_dict={ self.inputs: batch_images, self.z: batch_z })
-        #self.writer.add_summary(summary_str, counter)
+        self.writer.add_summary(summary_str, counter)
 
         # Train G, E networks
         _, __, g_loss= self.sess.run([g_optim, e_optim, self.g_loss],
