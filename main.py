@@ -7,6 +7,9 @@ from utils import pp, visualize, to_json
 from models.dcgan_mnist import DCGAN_MNIST
 from models.dcgan_celeba import DCGAN_CelebA
 from models.dcwgan_mnist import DCWGAN_MNIST
+from models.dcwgan_celeba import DCWGAN_CelebA
+from models.bigan_celeba import BiGAN_CelebA
+from models.biwgan_celeba import BiWGAN_CelebA
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -54,6 +57,7 @@ def main(_):
           sess,
           batch_size=FLAGS.batch_size,
           y_dim=10,
+          z_dim=100,
           c_dim=1,
           checkpoint_dir=FLAGS.checkpoint_dir,
           sample_dir=FLAGS.sample_dir)
@@ -74,9 +78,42 @@ def main(_):
           batch_size=FLAGS.batch_size,
           n_critic=5,
           y_dim=10,
+          z_dim=100,
           c_dim=1,
           checkpoint_dir=FLAGS.checkpoint_dir,
           sample_dir=FLAGS.sample_dir)
+    elif FLAGS.model == 'dcwgan_celeba':
+      FLAGS.dataset = 'celebA'
+      model = DCWGAN_CelebA(
+          sess,
+          batch_size=FLAGS.batch_size,
+          n_critic=5,
+          c_dim=FLAGS.c_dim,
+          input_fname_pattern=FLAGS.input_fname_pattern,
+          is_crop=FLAGS.is_crop,
+          checkpoint_dir=FLAGS.checkpoint_dir,
+          sample_dir=FLAGS.sample_dir)
+    elif FLAGS.model == 'bigan_celeba':
+      FLAGS.dataset = 'celebA'
+      model = BiGAN_CelebA(
+          sess,
+          batch_size=FLAGS.batch_size,
+          c_dim=FLAGS.c_dim,
+          input_fname_pattern=FLAGS.input_fname_pattern,
+          is_crop=FLAGS.is_crop,
+          checkpoint_dir=FLAGS.checkpoint_dir,
+          sample_dir=FLAGS.sample_dir)
+    elif FLAGS.model == 'biwgan_celeba':
+      FLAGS.dataset = 'celebA'
+      model = BiWGAN_CelebA(
+          sess,
+          batch_size=FLAGS.batch_size,
+          c_dim=FLAGS.c_dim,
+          input_fname_pattern=FLAGS.input_fname_pattern,
+          is_crop=FLAGS.is_crop,
+          checkpoint_dir=FLAGS.checkpoint_dir,
+          sample_dir=FLAGS.sample_dir)
+
     else:
       print('No such model.')
 
